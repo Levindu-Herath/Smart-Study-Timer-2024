@@ -731,12 +731,13 @@ export default function StopWatch() {
         </button>
 
 
+
 </div>
 
       
             <div className="header-container">
             
-               {/*  <FocusMonitor currentMode={currentMode}/> */}
+               <FocusMonitor currentMode={currentMode}/>
             <div className=" flex justify-center items-center mb-14">
                         <div className="w-[120px]"><img src="whitelogo.png" alt="" /></div>
                       </div>

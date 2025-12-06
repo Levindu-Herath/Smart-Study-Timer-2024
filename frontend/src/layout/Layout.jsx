@@ -1,26 +1,36 @@
+
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
+import ChatAssistant from '../components/ChatAssistant/ChatAssistant';
 
 const Layout = ({ children }) => {
   const location = useLocation();
 
-  // Check if the current route is either /timer or /dashboard
-  const isExcludedRoute = location.pathname === '/timer' || location.pathname === "/student-dashboard/:studentId"|| location.pathname === "/login"|| location.pathname === "/signup/:role"|| location.pathname === "/role"|| location.pathname === "/"|| location.pathname === "/signup/student"|| location.pathname === "/signup/parent"|| location.pathname === "/unauthorized"|| location.pathname === "/todo-after-login"||location.pathname === "/notifications"
-  |location.pathname === "/faq" ||location.pathname === "/PomodoroReview" ||location.pathname === "/admin-dashboard" ||location.pathname === "/issues" ||location.pathname === "/quiz" ||location.pathname === "/payment" || location.pathname === "/quizGenerator" || location.pathname === "/olquiz" || location.pathname === "/adminQuiz" || location.pathname === "/updateQuiz";
-  
+  // ✅ Pages that SHOULD have the Header
+  const headerIncludedRoutes = ["/home"]; // Add more if needed
+
+  // ✅ Show header only if current path matches one in the above list
+  const showHeader = headerIncludedRoutes.some((path) =>
+    location.pathname.startsWith(path)
+  );
+
+  // ✅ Hide ChatAssistant on PDF Viewer and Quiz pages
+  const hideChatAssistant = location.pathname.startsWith('/pdf-viewer') || 
+                           location.pathname.startsWith('/quiz');
+
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Render Header only if not on the /timer or /dashboard route */}
-      {!isExcludedRoute && <Header />}
-      
-      <main className="flex-grow bg-white">
-        {children}
-      </main>
-      
-      {/* Always render Footer */}
+      {showHeader && <Header />}
+
+      <main className="flex-grow bg-white">{children}</main>
+
       <Footer />
+      
+      {/* Chat Assistant - available everywhere for logged-in users */}
+      {/* Chat Assistant - HIDDEN on /pdf-viewer and /quiz paths */}
+      {!hideChatAssistant && <ChatAssistant />}
     </div>
   );
 };

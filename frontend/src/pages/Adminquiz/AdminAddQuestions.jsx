@@ -8,6 +8,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
+import { useNavigate } from "react-router-dom";
 
 const AdminAddQuestion = () => {
   const [paperDetails, setPaperDetails] = useState({
@@ -27,6 +28,7 @@ const AdminAddQuestion = () => {
   });
 
   const [selectedPaperId, setSelectedPaperId] = useState("");
+  const navigate = useNavigate();
 
   const handleAddOption = () => {
     if (currentQuestion.options.length < 5) {
@@ -57,7 +59,7 @@ const AdminAddQuestion = () => {
     const paperId = `${paperDetails.year}_${paperDetails.subject}_${paperDetails.medium}`;
     setSelectedPaperId(paperId);
 
-    const paperRef = doc(collection(db, "papers", paperDetails.category, paperId));
+    const paperRef = doc(db, "papers", paperDetails.category, "papersList", paperId);
 
     const data = {
       ...paperDetails,
@@ -74,7 +76,7 @@ const AdminAddQuestion = () => {
       alert("No paper selected to update!");
       return;
     }
-    const paperRef = doc(db, "papers", paperDetails.category, selectedPaperId);
+    const paperRef = doc(db, "papers", paperDetails.category, "papersList", selectedPaperId);
     await updateDoc(paperRef, { questions });
     alert("Questions updated successfully!");
   };
@@ -89,11 +91,73 @@ const AdminAddQuestion = () => {
     });
   };
 
+const handleWordUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const { default: mammoth } = await import("mammoth");
+
+  const reader = new FileReader();
+
+  reader.onload = async (ev) => {
+    const arrayBuffer = ev.target.result;
+
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    const text = result.value;
+
+    parseWordQuestions(text);
+  };
+
+  reader.readAsArrayBuffer(file);
+};
+
+
+const parseWordQuestions = (text) => {
+  const lines = text.split("\n").map(l => l.trim()).filter(l => l);
+
+  const parsedQuestions = [];
+  let currentQ = null;
+
+  lines.forEach((line) => {
+    // Match question numbers e.g. "1.", "2."
+    if (/^\d+\./.test(line)) {
+      if (currentQ) parsedQuestions.push(currentQ);
+
+      currentQ = {
+        question: line.replace(/^\d+\.\s*/, ""),
+        options: [],
+        correctAnswers: []
+      };
+    }
+    // Match options A) B) C) D)
+    else if (/^[A-D]\)/.test(line)) {
+      const optionText = line.replace(/^[A-D]\)\s*/, "");
+      if (currentQ) currentQ.options.push(optionText);
+    }
+  });
+
+  if (currentQ) parsedQuestions.push(currentQ);
+
+  // Add to existing questions
+  setQuestions(prev => [...prev, ...parsedQuestions]);
+
+  alert(`${parsedQuestions.length} questions imported from Word!`);
+};
+
+
+    const handleQuizNavigate = () => {navigate("/updateQuiz"); };
+
+
   return (
     <div className="p-8 max-w-4xl mx-auto bg-white shadow rounded-lg">
       <h1 className="text-2xl font-bold mb-4 text-center text-blue-700">
         Paper Management Panel
       </h1>
+
+       <button className="mt-6 mb-6 text-blue-800 py-2 px-4 font-[700] mr-2" style={{width: 240, height: 38, borderColor:'#293dbcff',borderWidth:'0.2px', boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', borderRadius: 100}}
+    onClick={handleQuizNavigate} >
+    Update Existing Papers
+                  </button>
 
       {/* Paper Details */}
       <div className="grid grid-cols-2 gap-4 mb-6">
@@ -153,6 +217,28 @@ const AdminAddQuestion = () => {
           }
         />
       </div>
+      <div className="mb-6">
+  <h2 className="text-lg font-semibold mb-2 text-gray-700">
+    Import Questions from Word (.docx)
+  </h2>
+
+  <input
+    type="file"
+    accept=".docx"
+    onChange={handleWordUpload}
+    className="border p-2 rounded w-full"
+  />
+
+  <p className="text-sm text-gray-600 mt-1">
+    Make sure your Word file follows this format:<br />
+    <b>1. Question text</b><br />
+    A) Option 1<br />
+    B) Option 2<br />
+    C) Option 3<br />
+    D) Option 4<br />
+    *(Correct answers must be selected manually after import.)*
+  </p>
+</div>
 
       {/* Question Input */}
       <div className="p-4 border rounded mb-6">

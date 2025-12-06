@@ -4,8 +4,10 @@ import HomeImg3 from '../assets/images/HomePageIcons/home_img3.png';
 import HomeImg4 from '../assets/images/HomePageIcons/home_img4.png'
 import googlePlayIcon from '../assets/images/FooterIcons/googlePlayIcon.png'
 import appleStoreIcon from '../assets/images/FooterIcons/appleStoreIcon.jpg'
+import { useNavigate } from 'react-router-dom';
 
 const DownloadSection = () => {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col items-center bg-white py-5">
       <div className="flex flex-col md:flex-row items-center justify-between w-full max-w-7xl px-4">
@@ -33,7 +35,7 @@ const DownloadSection = () => {
             Take control of your study plans or keep track of your child's progress
             effortlessly with StudyMate. <br />
             <span className="font-bold">Best of all, it's free!</span> <br />
-            Get started today by downloading from the Play Store or App Store.
+            StudyMate mobile app is coming soon — stay tuned!
           </p>
           <div className="flex space-x-4 mt-4">
           <img src={googlePlayIcon} alt="" className='h-11 rounded-xl h-10'/>
@@ -55,6 +57,12 @@ const DownloadSection = () => {
             Our app uses the Pomodoro Technique to help you stay focused and productive. Alternate between
              work and short breaks with customizable timers, ensuring you make the most out of every study session.
             </p>
+             <button    
+              className="w-full  text-blue-600 font-bold text-[20px] h-[34px] bg-gradient-to-b from-[#fff] to-[#fff] mt-2"
+              onClick={() => navigate(`/pomodoro`)} 
+              >
+              Not sure what Pomodoro means? Click to find out! 
+            </button>
           </div>
           <div >
             <img src={HomeImg3} alt="" className="w-[500px]" />
